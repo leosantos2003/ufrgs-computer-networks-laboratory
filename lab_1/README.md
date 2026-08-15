@@ -97,6 +97,233 @@ Se A envia um quadro destinado a B, o switch aprende onde cada dispositivo está
 
 ### 8. Endereço MAC
 
+Para realizar uma comutação Ethernet, o switch utiliza principalmente endereços MAC. Um endereço MAC se parece com `00:1A:2B:3C:4D;5E`. Cada interface Ethernet possui um endereço MAC.
+
+MAC ---> usado na comunicação Ethernet local
+
+IP ---> usado para comunicação lógica entre redes
+
+O switch mantém uma espécie de tabela:
+
+```bash
+Endereço MAC       Porta
+AA:AA:AA:AA:AA     1
+BB:BB:BB:BB:BB     2
+CC:CC:CC:CC:CC     3
+```
+
+### 9. Quadro Ethernet
+
+Quando os dados estão trafegando em uma LAN Ethernet, eles são transportados em quadros, ou frames.
+
+```bash
+┌───────────────────────────────┐
+│ Endereço MAC destino          │
+│ Endereço MAC origem           │
+│ Informações Ethernet          │
+│ Dados                         │
+│ Verificação de erros          │
+└───────────────────────────────┘
+```
+
+Dentro da parte "Dados", normalmente existe um pacote IP. Essa ideia é chamada de encapsulamento.
+
+```bash
+Quadro Ethernet
+┌──────────────────────────────┐
+│ Cabeçalho Ethernet           │
+│                              │
+│   Pacote IP                  │
+│   ┌──────────────────────┐   │
+│   │ Cabeçalho IP         │   │
+│   │                      │   │
+│   │ Segmento TCP         │   │
+│   │ ┌──────────────────┐ │   │
+│   │ │ TCP + dados      │ │   │
+│   │ └──────────────────┘ │   │
+│   └──────────────────────┘   │
+└──────────────────────────────┘
+```
+
+### 10. Pacote, segmento e quadro
+
+| Camada    | Unidade típica   |
+| --------- | ---------------- |
+| Aplicação | dados            |
+| TCP       | segmento         |
+| IP        | pacote/datagrama |
+| Ethernet  | quadro           |
+| Física    | bits             |
+
+Por exemplo, o `iperf` produz dados:
+
+```bash
+iperf
+ ↓
+dados
+ ↓
+TCP
+ ↓
+segmento TCP
+ ↓
+IP
+ ↓
+pacote IP
+ ↓
+Ethernet
+ ↓
+quadro Ethernet
+ ↓
+bits no cabo
+```
+
+### 11. Roteador
+
+Um roteadro possui uma função diferente do switch; ele conecta redes IP diferentes e decide por ondde encaminhar pacotes.
+
+```bash
+Rede A                     Rede B
+192.168.1.x                10.0.0.x
+
+PC ── Switch ── Roteador ── Switch ── Servidor
+```
+
+Switch ---> liga dispositivos dentro de uma LAN ---> trabalha principalmente com MAC/Ethernet
+
+
+Roteador ---> liga diferentes redes IP ---> trabalha principalmente com endereços IP
+
+O roteador precisa decidir: **"Para onde envio este pacote para que ele se aproxime do destino?"** Para isso usa uma tabela de roteamento.
+
+```bash
+Rede destino        Próximo salto
+10.0.0.0/24         interface 1
+192.168.1.0/24      interface 2
+0.0.0.0/0           roteador X
+```
+
+Cada passagem por um roteador pode ser chamada de um **salto**, ou hop.
+
+### 12. LAN
+
+Uma LAN (Local Area Network) é uma rede local.
+
+```bash
+              LAN
+┌────────────────────────────────┐
+│                                │
+│ PC1 ─┐                         │
+│      ├── Switch ─── Servidor   │
+│ PC2 ─┘                         │
+│                                │
+└────────────────────────────────┘
+```
+
+### 13. WAN
+
+Uma WAN (Wide Area Network) conecta redes a distâncias maiores.
+
+```bash
+LAN Porto Alegre
+      │
+   roteador
+      │
+      │
+     WAN
+      │
+      │
+   roteador
+      │
+LAN Rio de Janeiro
+```
+
+### 14. Rede de acesso e backbone
+
+Uma rede de acesso conecta o usuário à infraestrutura de rede.
+
+```bash
+Seu PC
+  │
+switch
+  │
+roteador local
+```
+
+Um backbone é uma infraestrutura de alta capacidade que interliga diferentes partes da rede.
+
+```bash
+cidade A ═════ cidade B ═════ cidade C
+          backbone
+```
+
+### 15. Fila
+
+Imagine um switch ou roteador recebendo pacotes mais rapidamente do que consegue transmiti-los.
+
+```bash
+entrada:
+3 Mbit/s
+   ↓
+┌──────────┐
+│ fila     │
+└──────────┘
+   ↓
+saída:
+2 Mbit/s
+```
+
+Os pacotes precisam esperar, e essa espera ocorre em uma fila.
+
+```bash
+Pacotes chegando
+↓ ↓ ↓ ↓ ↓ ↓
+
+[ P1 ][ P2 ][ P3 ][ P4 ] → enlace de saída
+         fila
+```
+
+A memória onde os pacotes ficam aguardando é chamada de buffer. O buffer possui tamanho limitado.
+
+### 16. Drop e perda de pacotes
+
+Se a fila estiver cheia quando um novo pacote chega, ele pode ser descartado:
+
+```bash
+fila cheia
+
+[P1][P2][P3][P4]
+               ↑
+               cheia
+
+novo pacote P5
+      ↓
+      X
+   descartado
+```
+
+Isso é **packet loss**, a perda de pacote.
+
+Uma fila **DropTail** descarta pacotes no final da fila.
+
+```bash
+pacote novo
+    ↓
+
+[P1][P2][P3][  ]
+             ↓
+           entra
+```
+
+```bash
+[P1][P2][P3][P4]
+
+pacote P5
+    ↓
+    X
+```
+
+Quando a soma dos fluxos ultrapassa a capacidade do enlace, a fila e os descartes começam.
+
 ---------------------
 
 ## Questão 1

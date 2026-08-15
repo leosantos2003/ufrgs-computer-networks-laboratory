@@ -1,8 +1,109 @@
 # Relatório
 
-### Questão 1
+## Notas importantes
 
-### Questão 2
+### 1. Rede
+
+Uma rede é um conjunto de dispositivos capazes de trocar dados através de algum meio de comunicação.
+
+Computador A ---> Enlace ---> Computador B
+
+Dispositivo ---> Interface ---> Enlace ---> Interface ---> Dispositivo
+
+PC A ---> Switch ---> Roteador ---> Switch ---> PC B
+
+### 2. Nó
+
+Um nó é qualquer ponto ou dispositivo participante da rede.
+
+Ex: computador, servidor, roteador, switch, impressora, access point, sensor.
+
+### 3. Enlace
+
+Um enlace, ou link, é a conexão que permite a transmissão de dados entre dois pontos da rede.
+
+O enlace pode utilizar diferentes tecnologias ou meios físicos: cabo Ethernet, fibra óptica, Wi-Fi, rádio.
+
+Se um enlace possui 2 Mbit/s significa que a **capacidade máxima de transmissão** do enlace é de 2 Mbits/s.
+
+### 4. Interface de rede
+
+O computador se conecta ao cabo por uma interface de rede. A interface pode ser Ethernet, Wi-Fi, fibra, interface virtual. Em Linux, é comum encontrar nomes como eth0, enp3s0, wlan0, lo. Cade interface pode ter configurações próprias, incluindo endereço IP.
+
+```bash
+Computador
+┌─────────────────────────┐
+│                         │
+│       Sistema           │
+│                         │
+│    Interface Ethernet ──┼──── cabo
+│                         │
+└─────────────────────────┘
+```
+
+### 5. Placa de rede - NIC
+
+A NIC (Network Interface Card) é o hardware responsável pela interface de rede.
+
+```bash
+CPU
+ │
+Sistema Operacional
+ │
+Driver
+ │
+NIC / placa de rede
+ │
+cabo Ethernet
+```
+
+Se uma placa de rede suporta apenas 100 Mbits/s, não adianta conectá-la a um switch de 1 Gbit/s esperando obter 1 Gbit/s. O caminho é limitado pela menor capacidade relevante. Portanto, nesse caso, a placa de rede seria o **gargalo**, ou bottleneck, ou seja, o recurso que limita a taxa do caminho. 
+
+### 6. Topologia
+
+Topologia é a forma como os nós e enlaces estão organizados.
+
+A topologia da questão 1 é:
+
+```bash
+0 ──┐
+    ├── 2 ─── 3
+1 ──┘
+```
+
+Tanto o tráfego 0 -> 3 quanto 1 -> 3 precisa atravessar 2 -> 3. Logo, esse enlance é compatilhado pelos dois caminhos. Esse é o princípio do problema de **disputa de capacidade**.
+
+### 7. Comutador
+
+Um comutador Ethernet, ou Switch, conecta dispositivos dentro de uma rede local.
+
+```bash
+              ┌─────────┐
+PC A ─────────│         │
+PC B ─────────│ Switch  │──────── Servidor
+PC C ─────────│         │
+              └─────────┘
+```
+
+Cada cabo normalmente corresponde a um enlace. O switch recebe quadros Ethernet e decide para qual porta encaminhá-los.
+
+PC A ---> porta 1
+
+PC B ---> porta 2
+
+PC C ---> porta 3
+
+Se A envia um quadro destinado a B, o switch aprende onde cada dispositivo está e pode fazer `porta 1 ---> porta 2` em vez de simplesmente enviar para todo mundo.
+
+### 8. Endereço MAC
+
+---------------------
+
+## Questão 1
+
+---------------------
+
+## Questão 2
 
 Computador 1: `10.67.103.29`
 
@@ -27,9 +128,24 @@ TCP window size: 128 KByte (default)
 [ 3] 0.0000-10.0196 sec 1.10 GBytes 941 Mbits/sec
 ```
 
+Em uma comunicação de rede, o **Servidor** fica esperando conexões e o **Cliente** inicia a conexão com o servidor.
+
 `iperf -s`: `-s` coloca o iperf em modo servidor.
 
 `local 10.67.103.29 port 5001 connected with 10.67.103.12`: Computador 2 (10.67.103.12) iniciou uma conexão com o Computador 2 (10.67.103.29).
+
+Computador 1: 10.67.103.29 (cliente)  ---> TCP --->  Computador 2: 10.67.103.12 (servidor)                     
+
+Os testes executados usam **TCP** (Transmission Control Protocol). É um protocolo de transporte orientado à conexão. Ele procura garantir:
+- entrega de dados;
+- entrega na ordem correta;
+- retransmissão de segmentos perdidos;
+- controle de fluxo;
+- controle de congestionamento.
+
+### TCP vs. UDP:
+
+
 
 Testes:
 
@@ -82,7 +198,15 @@ aluno@s-67-103-29:~$
 
 `Computador 1 -> Computador 2` ≈ ~940 Mbits/sec
 
+Como a rede é de 1Gbit/s e os resultados foram ~940 Mbits/s, a rede provavelmente está operando em sua capacidade máxima.
 
-### Questão 3
+---------------------
 
-### Questão 4
+## Questão 3
+
+---------------------
+
+## Questão 4
+
+
+---------------------

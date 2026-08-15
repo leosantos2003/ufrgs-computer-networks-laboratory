@@ -1,6 +1,6 @@
 # Computer Networks Laboratory
 
-**UFRGS - INF01048 - Laboratório de Redes - 2026/2**
+**UFRGS - INF01082 - Laboratório de Redes - 2026/2**
 
 ## About
 

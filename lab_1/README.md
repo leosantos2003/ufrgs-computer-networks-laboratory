@@ -1,334 +1,40 @@
 # Relatório
 
-## Notas importantes
-
-### 1. Rede
-
-Uma rede é um conjunto de dispositivos capazes de trocar dados através de algum meio de comunicação.
-
-Computador A ---> Enlace ---> Computador B
-
-Dispositivo ---> Interface ---> Enlace ---> Interface ---> Dispositivo
-
-PC A ---> Switch ---> Roteador ---> Switch ---> PC B
-
-### 2. Nó
-
-Um nó é qualquer ponto ou dispositivo participante da rede.
-
-Ex: computador, servidor, roteador, switch, impressora, access point, sensor.
-
-### 3. Enlace
-
-Um enlace, ou link, é a conexão que permite a transmissão de dados entre dois pontos da rede.
-
-O enlace pode utilizar diferentes tecnologias ou meios físicos: cabo Ethernet, fibra óptica, Wi-Fi, rádio.
-
-Se um enlace possui 2 Mbit/s significa que a **capacidade máxima de transmissão** do enlace é de 2 Mbits/s.
-
-### 4. Interface de rede
-
-O computador se conecta ao cabo por uma interface de rede. A interface pode ser Ethernet, Wi-Fi, fibra, interface virtual. Em Linux, é comum encontrar nomes como eth0, enp3s0, wlan0, lo. Cade interface pode ter configurações próprias, incluindo endereço IP.
-
-```bash
-Computador
-┌─────────────────────────┐
-│                         │
-│       Sistema           │
-│                         │
-│    Interface Ethernet ──┼──── cabo
-│                         │
-└─────────────────────────┘
-```
-
-### 5. Placa de rede - NIC
-
-A NIC (Network Interface Card) é o hardware responsável pela interface de rede.
-
-```bash
-CPU
- │
-Sistema Operacional
- │
-Driver
- │
-NIC / placa de rede
- │
-cabo Ethernet
-```
-
-Se uma placa de rede suporta apenas 100 Mbits/s, não adianta conectá-la a um switch de 1 Gbit/s esperando obter 1 Gbit/s. O caminho é limitado pela menor capacidade relevante. Portanto, nesse caso, a placa de rede seria o **gargalo**, ou bottleneck, ou seja, o recurso que limita a taxa do caminho. 
-
-### 6. Topologia
-
-Topologia é a forma como os nós e enlaces estão organizados.
-
-A topologia da questão 1 é:
-
-```bash
-0 ──┐
-    ├── 2 ─── 3
-1 ──┘
-```
-
-Tanto o tráfego 0 -> 3 quanto 1 -> 3 precisa atravessar 2 -> 3. Logo, esse enlance é compatilhado pelos dois caminhos. Esse é o princípio do problema de **disputa de capacidade**.
-
-### 7. Comutador
-
-Um comutador Ethernet, ou Switch, conecta dispositivos dentro de uma rede local.
-
-```bash
-              ┌─────────┐
-PC A ─────────│         │
-PC B ─────────│ Switch  │──────── Servidor
-PC C ─────────│         │
-              └─────────┘
-```
-
-Cada cabo normalmente corresponde a um enlace. O switch recebe quadros Ethernet e decide para qual porta encaminhá-los.
-
-PC A ---> porta 1
-
-PC B ---> porta 2
-
-PC C ---> porta 3
-
-Se A envia um quadro destinado a B, o switch aprende onde cada dispositivo está e pode fazer `porta 1 ---> porta 2` em vez de simplesmente enviar para todo mundo.
-
-### 8. Endereço MAC
-
-Para realizar uma comutação Ethernet, o switch utiliza principalmente endereços MAC. Um endereço MAC se parece com `00:1A:2B:3C:4D;5E`. Cada interface Ethernet possui um endereço MAC.
-
-MAC ---> usado na comunicação Ethernet local
-
-IP ---> usado para comunicação lógica entre redes
-
-O switch mantém uma espécie de tabela:
-
-```bash
-Endereço MAC       Porta
-AA:AA:AA:AA:AA     1
-BB:BB:BB:BB:BB     2
-CC:CC:CC:CC:CC     3
-```
-
-### 9. Quadro Ethernet
-
-Quando os dados estão trafegando em uma LAN Ethernet, eles são transportados em quadros, ou frames.
-
-```bash
-┌───────────────────────────────┐
-│ Endereço MAC destino          │
-│ Endereço MAC origem           │
-│ Informações Ethernet          │
-│ Dados                         │
-│ Verificação de erros          │
-└───────────────────────────────┘
-```
-
-Dentro da parte "Dados", normalmente existe um pacote IP. Essa ideia é chamada de encapsulamento.
-
-```bash
-Quadro Ethernet
-┌──────────────────────────────┐
-│ Cabeçalho Ethernet           │
-│                              │
-│   Pacote IP                  │
-│   ┌──────────────────────┐   │
-│   │ Cabeçalho IP         │   │
-│   │                      │   │
-│   │ Segmento TCP         │   │
-│   │ ┌──────────────────┐ │   │
-│   │ │ TCP + dados      │ │   │
-│   │ └──────────────────┘ │   │
-│   └──────────────────────┘   │
-└──────────────────────────────┘
-```
-
-### 10. Pacote, segmento e quadro
-
-| Camada    | Unidade típica   |
-| --------- | ---------------- |
-| Aplicação | dados            |
-| TCP       | segmento         |
-| IP        | pacote/datagrama |
-| Ethernet  | quadro           |
-| Física    | bits             |
-
-Por exemplo, o `iperf` produz dados:
-
-```bash
-iperf
- ↓
-dados
- ↓
-TCP
- ↓
-segmento TCP
- ↓
-IP
- ↓
-pacote IP
- ↓
-Ethernet
- ↓
-quadro Ethernet
- ↓
-bits no cabo
-```
-
-### 11. Roteador
-
-Um roteadro possui uma função diferente do switch; ele conecta redes IP diferentes e decide por ondde encaminhar pacotes.
-
-```bash
-Rede A                     Rede B
-192.168.1.x                10.0.0.x
-
-PC ── Switch ── Roteador ── Switch ── Servidor
-```
-
-Switch ---> liga dispositivos dentro de uma LAN ---> trabalha principalmente com MAC/Ethernet
-
-
-Roteador ---> liga diferentes redes IP ---> trabalha principalmente com endereços IP
-
-O roteador precisa decidir: **"Para onde envio este pacote para que ele se aproxime do destino?"** Para isso usa uma tabela de roteamento.
-
-```bash
-Rede destino        Próximo salto
-10.0.0.0/24         interface 1
-192.168.1.0/24      interface 2
-0.0.0.0/0           roteador X
-```
-
-Cada passagem por um roteador pode ser chamada de um **salto**, ou hop.
-
-### 12. LAN
-
-Uma LAN (Local Area Network) é uma rede local.
-
-```bash
-              LAN
-┌────────────────────────────────┐
-│                                │
-│ PC1 ─┐                         │
-│      ├── Switch ─── Servidor   │
-│ PC2 ─┘                         │
-│                                │
-└────────────────────────────────┘
-```
-
-### 13. WAN
-
-Uma WAN (Wide Area Network) conecta redes a distâncias maiores.
-
-```bash
-LAN Porto Alegre
-      │
-   roteador
-      │
-      │
-     WAN
-      │
-      │
-   roteador
-      │
-LAN Rio de Janeiro
-```
-
-### 14. Rede de acesso e backbone
-
-Uma rede de acesso conecta o usuário à infraestrutura de rede.
-
-```bash
-Seu PC
-  │
-switch
-  │
-roteador local
-```
-
-Um backbone é uma infraestrutura de alta capacidade que interliga diferentes partes da rede.
-
-```bash
-cidade A ═════ cidade B ═════ cidade C
-          backbone
-```
-
-### 15. Fila
-
-Imagine um switch ou roteador recebendo pacotes mais rapidamente do que consegue transmiti-los.
-
-```bash
-entrada:
-3 Mbit/s
-   ↓
-┌──────────┐
-│ fila     │
-└──────────┘
-   ↓
-saída:
-2 Mbit/s
-```
-
-Os pacotes precisam esperar, e essa espera ocorre em uma fila.
-
-```bash
-Pacotes chegando
-↓ ↓ ↓ ↓ ↓ ↓
-
-[ P1 ][ P2 ][ P3 ][ P4 ] → enlace de saída
-         fila
-```
-
-A memória onde os pacotes ficam aguardando é chamada de buffer. O buffer possui tamanho limitado.
-
-### 16. Drop e perda de pacotes
-
-Se a fila estiver cheia quando um novo pacote chega, ele pode ser descartado:
-
-```bash
-fila cheia
-
-[P1][P2][P3][P4]
-               ↑
-               cheia
-
-novo pacote P5
-      ↓
-      X
-   descartado
-```
-
-Isso é **packet loss**, a perda de pacote.
-
-Uma fila **DropTail** descarta pacotes no final da fila.
-
-```bash
-pacote novo
-    ↓
-
-[P1][P2][P3][  ]
-             ↓
-           entra
-```
-
-```bash
-[P1][P2][P3][P4]
-
-pacote P5
-    ↓
-    X
-```
-
-Quando a soma dos fluxos ultrapassa a capacidade do enlace, a fila e os descartes começam.
-
----------------------
+(Necessita nova revisão aprofundada.)
 
 ## Questão 1
 
----------------------
+Topologia: `0 -> 2 -> 3` e `1 -> 2 -> 3`. Todos os enlaces têm capacidade de 2 Mbit/s. O gargalo comum aos três fluxos é a saída do nó 2 (`2 -> 3`). Para os gráficos, considere que TCP divide de forma justa a capacidade que resta depois do fluxo UDP; portanto, quando os três fluxos coexistem, o UDP usa 1,2 Mbit/s e cada TCP usa `(2 - 1,2)/2 = 0,4` Mbit/s.
+
+### a) Sniffer na saída do nó 2
+
+| Intervalo | TCP 0 -> 3 | TCP 1 -> 3 | UDP 0 -> 3 | Total no enlace 2 -> 3 |
+| --- | ---: | ---: | ---: | ---: |
+| 0–1 s | 0 | 0 | 0 | 0 Mbit/s |
+| 1–2 s | 2,0 | 0 | 0 | 2,0 Mbit/s |
+| 2–3 s | 1,0 | 1,0 | 0 | 2,0 Mbit/s |
+| 3–5 s | 0,4 | 0,4 | 1,2 | 2,0 Mbit/s |
+| 5–7 s | 0 | 2,0 | 0 | 2,0 Mbit/s |
+
+Assim, o gráfico tem um patamar de 2 Mbit/s entre 1 s e 7 s, mas a composição dele muda nos instantes 2 s, 3 s e 5 s.
+
+### b) Sniffer na saída do nó 0
+
+Neste ponto não aparece o TCP iniciado no nó 1.
+
+| Intervalo | TCP 0 -> 3 | UDP 0 -> 3 | Total no enlace 0 -> 2 |
+| --- | ---: | ---: | ---: |
+| 0–1 s | 0 | 0 | 0 Mbit/s |
+| 1–3 s | 2,0 | 0 | 2,0 Mbit/s |
+| 3–5 s | 0,4 | 1,2 | 1,6 Mbit/s |
+| 5–7 s | 0 | 0 | 0 Mbit/s |
+
+Entre 3 s e 5 s sobra capacidade em `0 -> 2` (0,4 Mbit/s), mas não no enlace compartilhado `2 -> 3`. O tráfego do nó 1 consome essa capacidade no gargalo.
+
+### Segundo fluxo UDP (1 -> 3, de 4 s a 5 s)
+
+De 4 s a 5 s, a demanda passaria a ser `1,2 + 1,2 + 0,4 + 0,4 = 3,2` Mbit/s em `2 -> 3`, maior que os 2 Mbit/s disponíveis. A fila *Droptail* encheria e descartaria os pacotes que chegassem quando ela estivesse cheia. Logo, a soma efetivamente transmitida não passaria de 2 Mbit/s e haveria perdas. Como *Droptail* não garante divisão por fluxo, não é possível fixar uma taxa exata para cada fluxo apenas com o enunciado: ela depende da ordem de chegada dos pacotes. Na prática, os dois UDPs não reduzem a oferta por
+controle de congestionamento e os TCPs são os fluxos mais prejudicados.
 
 ## Questão 2
 
@@ -371,8 +77,6 @@ Os testes executados usam **TCP** (Transmission Control Protocol). É um protoco
 - controle de congestionamento.
 
 ### TCP vs. UDP:
-
-
 
 Testes:
 
@@ -427,13 +131,73 @@ aluno@s-67-103-29:~$
 
 Como a rede é de 1Gbit/s e os resultados foram ~940 Mbits/s, a rede provavelmente está operando em sua capacidade máxima.
 
----------------------
-
 ## Questão 3
 
----------------------
+Como é necessário impor 1, 10 e 30 Mbit/s, o teste deve usar UDP, pois em TCP o `iperf` tenta ocupar a maior taxa disponível, e `-b` não produz os três patamares desejados. No servidor (`10.67.103.12`), o comando é:
+
+```bash
+iperf -s -u
+```
+
+No cliente (`10.67.103.29`), os três testes consecutivos, com uma amostra por segundo, podem ser executados assim:
+
+```bash
+iperf -c 10.67.103.12 -u -b 1M  -t 30 -i 1 > q3-1M.log
+iperf -c 10.67.103.12 -u -b 10M -t 30 -i 1 > q3-10M.log
+iperf -c 10.67.103.12 -u -b 30M -t 30 -i 1 > q3-30M.log
+```
+
+Concatenando os três logs, o eixo do tempo terá aproximadamente 90 s.
+
+0–30 s em 1 Mbit/s,
+30–60 s em 10 Mbit/s e
+60–90 s em 30 Mbit/s.
+
+Se for necessário um único arquivo de saída, pode-se usar:
+
+```bash
+for taxa in 1M 10M 30M; do
+  iperf -c 10.67.103.12 -u -b "$taxa" -t 30 -i 1
+done | tee q3-90s.log
+```
+
+O teste fornecido com `-u -b 10M` confirma a configuração: em todos os intervalos mostrados foram enviados 1,25 MBytes, ou aproximadamente 10,5 Mbit/s. O pequeno excesso sobre 10 Mbit/s é compatível com a granularidade de temporização e com a apresentação arredondada do `iperf`. Já `-b 10` significa 10 **bit/s**, não 10 Mbit/s; por isso o programa recusou o intervalo entre datagramas de 1176 s. É necessário usar o sufixo `M`.
+
+O teste TCP de 90 s não é apropriado para construir esses três patamares, pois sua taxa não foi limitada: ele ficou próximo de 470 Mbit/s até cerca de 43 s e próximo de 940 Mbit/s depois disso. A mudança também sugere uma alteração de condição externa (por exemplo, outro fluxo concorrente), não os níveis de 1, 10 e 30 Mbit/s solicitados.
+
 
 ## Questão 4
 
+Consulta feita ao [Panorama de Tráfego da Rede Ipê](https://redeipe.rnp.br/panorama)
+em **07/09/2026, 22:00:47 (BRT)**.
 
----------------------
+Um **backbone** é a parte central, de alta capacidade, que interliga redes, cidades ou pontos de presença e transporta o tráfego agregado entre elas. A Rede Ipê é o backbone acadêmico nacional operado pela RNP.
+
+![alt text](<Inspected image.png>)
+
+![alt text](<Inspected image(1).png>)
+
+![alt text](<Inspected image(2).png>)
+
+**a) Duas rotas RS -> RJ.** As duas rotas a seguir existem no mapa:
+
+1. `RS -> SP -> RJ`
+2. `RS -> PR -> SP -> RJ`
+
+Também seria possível usar `RS -> SC -> SP -> RJ`.
+
+**b) Alternativa se SP -> RJ ficar indisponível.** Uma rota que não usa esse enlace é `RS -> SP -> MG -> RJ`. Ela aproveita os enlaces SP–MG e MG–RJ.
+
+**c) PTT.** Um PTT (ou IX) é a infraestrutura neutra onde redes diferentes fazem *peering* e trocam tráfego diretamente. Ele diminui o número de saltos, latência e custo de trânsito, além de manter tráfego local na região. Três exemplos visíveis no panorama são PTT-RS (Porto Alegre), PTT-SP (São Paulo) e PTT-RJ (Rio de Janeiro).
+
+**d) Conexões internacionais.** O mapa mostra, por exemplo, o ponto MIA (Miami, EUA), conectado ao RS por 100 Gb/s, e a conexão CE -> RedCLARA, de 100 Gb/s, que interliga a rede acadêmica brasileira à rede acadêmica latino-americana. O panorama também mostra conexões internacionais a partir de SP.
+
+**e) Três PoPs.** PoP-RS (Porto Alegre), PoP-SP (São Paulo) e PoP-RJ (Rio de Janeiro). A RNP mantém 27 PoPs, um em cada unidade da federação.
+
+**f) UFRGS.** A UFRGS abriga o PoP-RS no seu Centro de Processamento de Dados, em Porto Alegre. Portanto, ela é parte da infraestrutura de acesso da RNP no estado e se conecta ao restante da Rede Ipê pelo PoP-RS/Rede Tchê. Essa relação é documentada pelo [PoP-RS](https://pop-rs.rnp.br/).
+
+**g) Link fora do ar.** No instante consultado, o enlace PB -> PB_JPA (200 Gb/s) aparecia tracejado/sem tráfego; seu gráfico diário indicava valor atual de 0 bit/s tanto na entrada quanto na saída. Assim, não havia tráfego circulando por ele naquele momento. Isso não permite, sozinho, afirmar a causa da indisponibilidade (manutenção, falha ou desligamento), apenas o efeito observado: tráfego nulo.
+
+**h) Cores.** Elas representam a carga relativa do enlace: verde indica baixa utilização, amarelo indica utilização elevada/intermediária e vermelho indica utilização muito alta, próxima da capacidade. Preto/tracejado indica ausência de dados ou de tráfego no enlace. Logo, as cores não são, por si só, uma medida de capacidade: elas dependem da razão entre tráfego e capacidade.
+
+**i) Enlace RS–PR.** A capacidade indicada é **200 Gb/s**. Na consulta, o gráfico do enlace PR–RS mostrava aproximadamente **1,60 Gb/s de entrada** e **1,83 Gb/s de saída** (médias no gráfico diário: 1,17 Gb/s e 1,07 Gb/s, respectivamente). É uma utilização muito inferior à capacidade total do enlace.

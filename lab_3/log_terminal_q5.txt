@@ -1,0 +1,16 @@
+leonardo@leonardo-Inspiron-15-3530:~$ export SSLKEYLOGFILE="$HOME/sslkey.log"
+leonardo@leonardo-Inspiron-15-3530:~$ firefox &
+[1] 8769
+leonardo@leonardo-Inspiron-15-3530:~$ update.go:193: cannot change mount namespace according to change mount (/var/lib/snapd/hostfs/usr/local/share/doc /usr/local/share/doc none bind,ro 0 0): cannot write to "/var/lib/snapd/hostfs/usr/local/share/doc" because it would affect the host in "/var/lib/snapd"
+update.go:193: cannot change mount namespace according to change mount (/var/lib/snapd/hostfs/usr/share/gimp/2.0/help /usr/share/gimp/2.0/help none bind,ro 0 0): cannot write to "/var/lib/snapd/hostfs/usr/share/gimp/2.0/help" because it would affect the host in "/var/lib/snapd"
+update.go:193: cannot change mount namespace according to change mount (/var/lib/snapd/hostfs/usr/share/sphinx_rtd_theme /usr/share/sphinx_rtd_theme none bind,ro 0 0): cannot write to "/var/lib/snapd/hostfs/usr/share/sphinx_rtd_theme" because it would affect the host in "/var/lib/snapd"
+Gtk-Message: 14:04:21.643: Not loading module "atk-bridge": The functionality is provided by GTK natively. Please try to not load it.
+[Parent 8769, Main Thread] WARNING: OnGetManifestDone error: GDBus.Error:org.freedesktop.portal.Error.NotFound: Could not find native messaging host: 'glib warning', file toolkit/xre/nsSigHandlers.cpp:200
+
+** (firefox_firefox:8769): WARNING **: 14:04:25.250: OnGetManifestDone error: GDBus.Error:org.freedesktop.portal.Error.NotFound: Could not find native messaging host
+[Parent 8769, Main Thread] WARNING: OnGetManifestDone error: GDBus.Error:org.freedesktop.portal.Error.NotFound: Could not find native messaging host: 'glib warning', file toolkit/xre/nsSigHandlers.cpp:200
+
+** (firefox_firefox:8769): WARNING **: 14:04:25.379: OnGetManifestDone error: GDBus.Error:org.freedesktop.portal.Error.NotFound: Could not find native messaging host
+ls -l "$HOME/sslkey.log"
+-rw-rw-r-- 1 leonardo leonardo 27247 set 23 14:04 /home/leonardo/sslkey.log
+leonardo@leonardo-Inspiron-15-3530:~$
